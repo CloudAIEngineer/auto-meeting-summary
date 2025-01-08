@@ -1,0 +1,55 @@
+service: meeting-summary
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.9
+  environment:
+    CONFLUENCE_API_URL: YOUR_CONFLUENCE_URL
+    CONFLUENCE_API_KEY: YOUR_API_KEY
+
+custom:
+  snsTopicName: meeting-summary-topic
+  meetingBucket: meeting-records-20250108
+  transcriptBucket: meeting-transcripts-20250108
+  region: eu-central-1
+  snsTopicArn: arn:aws:sns:${self:provider.region}:${aws:accountId}:${self:custom.snsTopicName}
+
+plugins:
+  - serverless-python-requirements
+
+functions:
+  triggerAudioToText:
+    handler: handlers/trigger_audio_to_text.handler
+    environment:
+      SNS_TOPIC_ARN: ${self:custom.snsTopicArn}
+      MEETING_BUCKET_NAME: ${self:custom.meetingBucket}
+      TRANSCRIPTS_BUCKET_NAME: ${self:custom.transcriptBucket}
+      TRANSCRIBE_ROLE_ARN: !GetAtt LambdaExecutionRoleTranscribe.Arn
+    events:
+      - s3:
+          bucket: ${self:custom:meetingBucket}
+          event: s3:ObjectCreated:*
+
+  createMeetingSummary:
+    handler: handlers/create_meeting_summary.handler
+    memorySize: 4096
+    timeout: 900
+    environment:
+      CONFLUENCE_API_URL: ${self:provider.environment.YOUR_CONFLUENCE_URL}
+      CONFLUENCE_API_KEY: ${self:provider.environment.YOUR_API_KEY}
+    events:
+      - sns: ${self:provider.environment.SNS_TOPIC_ARN}
+
+resources:
+  - ${file(resources/sns.yml)}
+
+package:
+  individually: true
+  exclude:
+    - "*.json"
+    - "node_modules/**"
+    - ".serverless/**"
+    - ".git/**"
+    - "env/**"

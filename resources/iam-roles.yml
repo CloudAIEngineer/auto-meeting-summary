@@ -1,0 +1,69 @@
+Resources:
+  TranscribeExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: transcribe.amazonaws.com
+      Policies:
+        - PolicyName: TranscribeSNSPublishPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                  - sns:Publish
+                Effect: Allow
+                Resource: ${self:custom.snsTopicArn}
+
+  LambdaExecutionRoleTranscribe:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Policies:
+          - PolicyName: TranscribePolicy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Action:
+                    - transcribe:StartTranscriptionJob
+                  Effect: Allow
+                  Resource: "*"
+
+  LambdaExecutionRoleSummarize:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Policies:
+          - PolicyName: SNSAccessPolicy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Action:
+                    - sns:Subscribe
+                    - sns:ListSubscriptionsByTopic
+                  Effect: Allow
+                  Resource: ${self:custom.snsTopicArn}
+          - PolicyName: BedrockInvocationPolicy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Action:
+                    - bedrock:Invoke
+                  Effect: Allow
+                  Resource: "*"

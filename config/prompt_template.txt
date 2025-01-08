@@ -1,0 +1,16 @@
+<h1>Meeting Minutes - {current_date}</h1>
+<h2>Discussion Topics</h2>
+<table>
+  <tr><th>Time</th><th>Item</th><th>Presenter</th><th>Notes</th></tr>
+  {discussion_topics}
+</table>
+
+<h2>Action Items</h2>
+<ul>
+  {action_items}
+</ul>
+
+<h2>Decisions</h2>
+<ul>
+  {decisions}
+</ul>
