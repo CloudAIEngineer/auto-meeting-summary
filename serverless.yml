@@ -1,0 +1,53 @@
+service: meeting-summary
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.9
+
+custom:
+  region: eu-central-1
+  meetingBucket: meeting-records-20250108
+  transcriptBucket: meeting-transcripts-20250108
+  confluenceSecret: confluence-api-secret
+
+plugins:
+  - serverless-python-requirements
+
+functions:
+  triggerAudioToText:
+    handler: handlers/trigger_audio_to_text.handler
+    environment:
+      MEETING_BUCKET_NAME: ${self:custom.meetingBucket}
+      TRANSCRIPTS_BUCKET_NAME: ${self:custom.transcriptBucket}
+      TRANSCRIBE_ROLE_ARN: !GetAtt TranscribeDataAccessRole.Arn
+    events:
+      - s3:
+          bucket: ${self:custom.meetingBucket}
+          event: s3:ObjectCreated:*
+    role: !GetAtt LambdaExecutionRoleTranscribe.Arn
+
+  createMeetingSummary:
+    handler: handlers/create_meeting_summary.handler
+    memorySize: 1024
+    timeout: 60
+    environment:
+      CONFLUENCE_SECRET: ${self:custom.confluenceSecret}
+    events:
+      - s3:
+          bucket: ${self:custom.transcriptBucket}
+          event: s3:ObjectCreated:*
+    role: !GetAtt LambdaExecutionRoleSummarize.Arn
+
+resources:
+  - ${file(resources/iam-roles.yml)}
+
+package:
+  individually: true
+  exclude:
+    - "*.json"
+    - "node_modules/**"
+    - ".serverless/**"
+    - ".git/**"
+    - "env/**"
