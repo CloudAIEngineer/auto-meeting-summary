@@ -5,16 +5,12 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: python3.9
-  environment:
-    CONFLUENCE_API_URL: YOUR_CONFLUENCE_URL
-    CONFLUENCE_API_KEY: YOUR_API_KEY
 
 custom:
-  snsTopicName: meeting-summary-topic
+  region: eu-central-1
   meetingBucket: meeting-records-20250108
   transcriptBucket: meeting-transcripts-20250108
-  region: eu-central-1
-  snsTopicArn: arn:aws:sns:${self:provider.region}:${aws:accountId}:${self:custom.snsTopicName}
+  confluenceSecret: confluence-api-secret
 
 plugins:
   - serverless-python-requirements
@@ -23,27 +19,29 @@ functions:
   triggerAudioToText:
     handler: handlers/trigger_audio_to_text.handler
     environment:
-      SNS_TOPIC_ARN: ${self:custom.snsTopicArn}
       MEETING_BUCKET_NAME: ${self:custom.meetingBucket}
       TRANSCRIPTS_BUCKET_NAME: ${self:custom.transcriptBucket}
-      TRANSCRIBE_ROLE_ARN: !GetAtt LambdaExecutionRoleTranscribe.Arn
+      TRANSCRIBE_ROLE_ARN: !GetAtt TranscribeDataAccessRole.Arn
     events:
       - s3:
-          bucket: ${self:custom:meetingBucket}
+          bucket: ${self:custom.meetingBucket}
           event: s3:ObjectCreated:*
+    role: !GetAtt LambdaExecutionRoleTranscribe.Arn
 
   createMeetingSummary:
     handler: handlers/create_meeting_summary.handler
-    memorySize: 4096
-    timeout: 900
+    memorySize: 1024
+    timeout: 60
     environment:
-      CONFLUENCE_API_URL: ${self:provider.environment.YOUR_CONFLUENCE_URL}
-      CONFLUENCE_API_KEY: ${self:provider.environment.YOUR_API_KEY}
+      CONFLUENCE_SECRET: ${self:custom.confluenceSecret}
     events:
-      - sns: ${self:provider.environment.SNS_TOPIC_ARN}
+      - s3:
+          bucket: ${self:custom.transcriptBucket}
+          event: s3:ObjectCreated:*
+    role: !GetAtt LambdaExecutionRoleSummarize.Arn
 
 resources:
-  - ${file(resources/sns.yml)}
+  - ${file(resources/iam-roles.yml)}
 
 package:
   individually: true

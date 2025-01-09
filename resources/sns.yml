@@ -1,5 +1,0 @@
-Resources:
-  MeetingSummaryTopic:
-    Type: AWS::SNS::Topic
-    Properties:
-      TopicName: ${self:custom.snsTopicName}

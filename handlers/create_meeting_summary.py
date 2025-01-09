@@ -1,61 +1,15 @@
-import boto3
+import json
 import os
-import requests
 
-def lambda_handler(event, context):
-    sns_message = event['Records'][0]['Sns']['Message']
-    transcribe = boto3.client('transcribe')
-    s3 = boto3.client('s3')
-    bedrock = boto3.client('bedrock')
-    confluence_url = os.environ['CONFLUENCE_API_URL']
-    confluence_api_key = os.environ['CONFLUENCE_API_KEY']
+def handler(event, context):
+    print("Received event:", json.dumps(event, indent=2))
 
-    job_name = sns_message['TranscriptionJobName']
-    transcript_uri = sns_message['Transcript']['TranscriptFileUri']
+    s3_bucket = event['Records'][0]['s3']['bucket']['name']
+    s3_object_key = event['Records'][0]['s3']['object']['key']
     
-    bucket_name = transcript_uri.split('/')[2]
-    transcript_key = '/'.join(transcript_uri.split('/')[3:])
-
-    transcript_object = s3.get_object(Bucket=bucket_name, Key=transcript_key)
-    transcript_text = transcript_object['Body'].read().decode('utf-8')
-
-    prompt_template = get_prompt_template()
-
-    response = bedrock.invoke_model(
-        modelId="amazon.titan.large",
-        body={
-            "input": prompt_template.format(job_name=job_name, transcript_text=transcript_text)
-        }
-    )
-
-    confluence_page_content = response['body']
-    create_confluence_page(confluence_url, confluence_api_key, confluence_page_content)
+    print(f"File uploaded to bucket {s3_bucket} with key {s3_object_key}")
 
     return {
         'statusCode': 200,
-        'body': 'Meeting summary successfully created in Confluence'
+        'body': json.dumps('Event processed successfully')
     }
-
-def get_prompt_template():
-    file_path = os.path.join(os.path.dirname(__file__), 'prompt_template.txt')
-    with open(file_path, 'r') as file:
-        return file.read()
-
-def create_confluence_page(url, api_key, content):
-    headers = {
-        "Authorization": f"Basic {api_key}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "type": "page",
-        "title": "Meeting Summary",
-        "space": {"key": "YOUR_SPACE_KEY"},
-        "body": {
-            "storage": {
-                "value": content,
-                "representation": "storage"
-            }
-        }
-    }
-    response = requests.post(url + "/rest/api/content/", headers=headers, json=data)
-    return response

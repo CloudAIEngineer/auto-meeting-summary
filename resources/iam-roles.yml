@@ -1,24 +1,4 @@
 Resources:
-  TranscribeExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Action: sts:AssumeRole
-            Effect: Allow
-            Principal:
-              Service: transcribe.amazonaws.com
-      Policies:
-        - PolicyName: TranscribeSNSPublishPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Action:
-                  - sns:Publish
-                Effect: Allow
-                Resource: ${self:custom.snsTopicArn}
-
   LambdaExecutionRoleTranscribe:
     Type: AWS::IAM::Role
     Properties:
@@ -29,15 +9,33 @@ Resources:
             Effect: Allow
             Principal:
               Service: lambda.amazonaws.com
-        Policies:
-          - PolicyName: TranscribePolicy
-            PolicyDocument:
-              Version: '2012-10-17'
-              Statement:
-                - Action:
-                    - transcribe:StartTranscriptionJob
-                  Effect: Allow
-                  Resource: "*"
+      Policies:
+        - PolicyName: TranscribePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                  - transcribe:StartTranscriptionJob
+                Effect: Allow
+                Resource: "*"
+        - PolicyName: TranscribeLogsPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+        - PolicyName: PassRolePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                  - iam:PassRole
+                Effect: Allow
+                Resource: !GetAtt TranscribeDataAccessRole.Arn
 
   LambdaExecutionRoleSummarize:
     Type: AWS::IAM::Role
@@ -49,21 +47,45 @@ Resources:
             Effect: Allow
             Principal:
               Service: lambda.amazonaws.com
-        Policies:
-          - PolicyName: SNSAccessPolicy
-            PolicyDocument:
-              Version: '2012-10-17'
-              Statement:
-                - Action:
-                    - sns:Subscribe
-                    - sns:ListSubscriptionsByTopic
-                  Effect: Allow
-                  Resource: ${self:custom.snsTopicArn}
-          - PolicyName: BedrockInvocationPolicy
-            PolicyDocument:
-              Version: '2012-10-17'
-              Statement:
-                - Action:
-                    - bedrock:Invoke
-                  Effect: Allow
-                  Resource: "*"
+      Policies:
+        - PolicyName: BedrockInvocationPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                  - bedrock:Invoke
+                Effect: Allow
+                Resource: "*"
+        - PolicyName: SummarizeLogsPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "*"
+
+  TranscribeDataAccessRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: transcribe.amazonaws.com
+      Policies:
+        - PolicyName: TranscribeAccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource:
+                  - arn:aws:s3:::${self:custom.meetingBucket}/*
+                  - arn:aws:s3:::${self:custom.transcriptBucket}/*
