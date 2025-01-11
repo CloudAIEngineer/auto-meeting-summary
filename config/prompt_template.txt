@@ -1,16 +1,28 @@
-<h1>Meeting Minutes - {current_date}</h1>
-<h2>Discussion Topics</h2>
-<table>
-  <tr><th>Time</th><th>Item</th><th>Presenter</th><th>Notes</th></tr>
-  {discussion_topics}
-</table>
+For each identified presentation, create a JSON object with the following fields:  
+- **Time**: The start and end time of the entire presentation or discussion.  
+- **Item**: The main discussion topic or point.  
+- **Presenter**: The name of the presenter (if identified).  
+- **Notes**: A brief summary of the key points discussed in the presentation.  
 
-<h2>Action Items</h2>
-<ul>
-  {action_items}
-</ul>
+If you can't fill a field just skip this field in the JSON structure.
+Return the output in the following JSON format without any other text. 
 
-<h2>Decisions</h2>
-<ul>
-  {decisions}
-</ul>
+{
+  "Date": "[Meeting Date]",
+  "Participants": ["Participant 1", "Participant 2", "..."],
+  "Goals": "[Goals of the meeting based on the transcript]",
+  "DiscussionTopics": [
+    {
+      "Time": "start_time - end_time",
+      "Item": "Main Discussion Topic",
+      "Presenter": "Name of Presenter (if available)",
+      "Notes": "Key points discussed"
+    }
+    // Additional presentations
+  ],
+  "ActionItems": "[List of action items]",
+  "Decisions": "[List of decisions]"
+}
+
+Here is the input data:
+{audio_segments}

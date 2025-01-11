@@ -11,6 +11,7 @@ custom:
   meetingBucket: meeting-records-20250108
   transcriptBucket: meeting-transcripts-20250108
   confluenceSecret: confluence-api-secret
+  confluenceURL: 'https://smartcloudblog.atlassian.net/wiki/rest/api/content/'
 
 plugins:
   - serverless-python-requirements
@@ -33,7 +34,8 @@ functions:
     memorySize: 1024
     timeout: 60
     environment:
-      CONFLUENCE_SECRET: ${self:custom.confluenceSecret}
+      CONFLUENCE_API_URL: ${self:custom.confluenceURL}
+      CONFLUENCE_API_SECRET: ${self:custom.confluenceSecret}
     events:
       - s3:
           bucket: ${self:custom.transcriptBucket}
