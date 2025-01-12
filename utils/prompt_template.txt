@@ -1,0 +1,39 @@
+The input data is a meeting transcript, which may contain several presentations provided 
+by different individuals. For this meeting, we need to extract the following general fields:  
+- Participants: A list of the names of the meeting participants.  
+- Goal: The goals of the meeting based on the transcript.  
+- ActionItems: A list of identified action items.  
+- Decisions: A list of decisions made during the meeting.  
+
+For each identified presentation, please capture the following information:  
+- Time: The start and end times of the presentation or discussion.  
+- Item: The main discussion topic or point.  
+- Presenter: The name of the presenter (if identified).  
+- Notes: A brief summary of the key points discussed during the presentation.  
+
+If a field is not available, skip it in the JSON structure.  
+Use the audio segments to populate the DiscussionTopics.  
+
+The final JSON structure should be as follows:
+
+{
+  "Participants": ["Participant 1", "Participant 2", "..."],
+  "Goals": "[Goals of the meeting based on the transcript]",
+  "DiscussionTopics": [
+    {
+      "Time": "start_time - end_time",
+      "Item": "Main Discussion Topic",
+      "Presenter": "Name of Presenter (if available)",
+      "Notes": "Key points discussed"
+    }
+    // Additional presentations
+  ],
+  "ActionItems": "[List of action items]",
+  "Decisions": "[List of decisions]"
+}
+
+The resulting JSON should be extractable with this regular expression:  
+`r'```json\s*(\{.*\})\s*```'`
+
+Here is the input data:  
+{audio_segments}

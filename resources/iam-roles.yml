@@ -75,6 +75,14 @@ Resources:
                   - s3:GetObject
                 Resource:
                   - arn:aws:s3:::${self:custom.transcriptBucket}/*
+        - PolicyName: SummarizeGetParameterPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameter
+                Resource: "*"
 
   TranscribeDataAccessRole:
     Type: AWS::IAM::Role
