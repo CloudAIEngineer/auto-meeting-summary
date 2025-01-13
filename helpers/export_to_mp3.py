@@ -3,10 +3,9 @@ from pydub import AudioSegment
 import os
 import re
 
-# Function to sanitize filenames
 def sanitize_filename(filename):
-    filename = re.sub(r'[\\/*?:"<>|]', "", filename)
-    filename = filename.replace(" ", "-")
+    filename = re.sub(r'[^a-zA-Z0-9-]', ' ', filename)  # Replace invalid characters with space
+    filename = filename.replace(" ", "-")  # Replace spaces with dashes
     return filename
 
 # Array of URLs - publicly available meetings from YouTube

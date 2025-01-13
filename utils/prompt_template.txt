@@ -2,7 +2,7 @@ The input data is a meeting transcript, which may contain several presentations 
 by different individuals. For this meeting, we need to extract the following general fields:  
 - Participants: A list of the names of the meeting participants.  
 - Goal: The goals of the meeting based on the transcript.  
-- ActionItems: A list of identified action items.  
+- ActionItems: A list of identified action items. Action item is a specific task or activity assigned to a person.
 - Decisions: A list of decisions made during the meeting.  
 
 For each identified presentation, please capture the following information:  
@@ -18,7 +18,7 @@ The final JSON structure should be as follows:
 
 {
   "Participants": ["Participant 1", "Participant 2", "..."],
-  "Goals": "[Goals of the meeting based on the transcript]",
+  "Goals": ["Goal1 of the meeting", "Goal2 of the meeting", "..."],
   "DiscussionTopics": [
     {
       "Time": "start_time - end_time",
@@ -28,8 +28,8 @@ The final JSON structure should be as follows:
     }
     // Additional presentations
   ],
-  "ActionItems": "[List of action items]",
-  "Decisions": "[List of decisions]"
+  "ActionItems": ["Action item1", "Action item2", "..."],
+  "Decisions": ["Meeting decision1", "Meeting decision2", "..."]
 }
 
 The resulting JSON should be extractable with this regular expression:  

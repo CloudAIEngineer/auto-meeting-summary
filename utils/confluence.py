@@ -21,13 +21,21 @@ def create_confluence_page(meeting_data, api_url, confluence_secret):
     h2.text = "Meeting Minutes"
 
     date_paragraph = ET.SubElement(body, "h3")
-    date_paragraph.text = f"Date: {current_date}"
+    date_paragraph.text = "Date:"
+    date_content = ET.SubElement(body, "p")
+    date_content.text = current_date
 
     participants_paragraph = ET.SubElement(body, "h3")
-    participants_paragraph.text = f"Participants: {', '.join(meeting_data.get('Participants', []))}"
+    participants_paragraph.text = "Participants:"
+    participants_content = ET.SubElement(body, "p")
+    participants_content.text = ', '.join(meeting_data.get('Participants', []))
 
     goals_paragraph = ET.SubElement(body, "h3")
-    goals_paragraph.text = f"Goals: {meeting_data.get('Goals', 'N/A')}"
+    goals_paragraph.text = "Goals:"
+    goals_list = ET.SubElement(body, "ul")
+    for goal in meeting_data.get('Goals', []):
+        li = ET.SubElement(goals_list, "li")
+        li.text = goal
 
     # Discussion Topics Table
     discussion_topics_header = ET.SubElement(body, "h3")
