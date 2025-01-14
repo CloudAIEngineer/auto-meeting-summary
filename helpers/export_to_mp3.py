@@ -4,8 +4,8 @@ import os
 import re
 
 def sanitize_filename(filename):
-    filename = re.sub(r'[^a-zA-Z0-9-]', ' ', filename)  # Replace invalid characters with space
-    filename = filename.replace(" ", "-")  # Replace spaces with dashes
+    filename = re.sub(r'[^a-zA-Z0-9-]', ' ', filename)
+    filename = filename.replace(" ", "-")
     return filename
 
 # Array of URLs - publicly available meetings from YouTube
