@@ -19,5 +19,6 @@ venv/
 dist/
 build/
 
-# My own backup folder
+# My folders
 backup/
+meetings/
