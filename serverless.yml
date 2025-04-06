@@ -50,6 +50,7 @@ package:
   exclude:
     - "*.json"
     - "node_modules/**"
+    - "meetings/**"
     - ".serverless/**"
     - ".git/**"
     - "env/**"
