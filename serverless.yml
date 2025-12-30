@@ -12,6 +12,8 @@ custom:
   transcriptBucket: meeting-transcripts-20250108
   confluenceSecret: confluence-api-secret
   confluenceURL: 'https://smartcloudblog.atlassian.net/wiki/rest/api/content/'
+  hfApiUrl: 'https://router.huggingface.co/v1/chat/completions'
+  hfModelId: 'meta-llama/Llama-3.1-8B-Instruct'
 
 plugins:
   - serverless-python-requirements
@@ -35,7 +37,10 @@ functions:
     timeout: 60
     environment:
       CONFLUENCE_API_URL: ${self:custom.confluenceURL}
-      CONFLUENCE_API_SECRET: ${self:custom.confluenceSecret}
+      CONFLUENCE_API_SECRET: ${ssm:${self:custom.confluenceSecret}}
+      HF_API_URL: ${self:custom.hfApiUrl}
+      HF_MODEL_ID: ${self:custom.hfModelId}
+      HF_API_TOKEN: ${ssm:hf-api-token}
     events:
       - s3:
           bucket: ${self:custom.transcriptBucket}
