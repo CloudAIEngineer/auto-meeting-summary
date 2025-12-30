@@ -4,7 +4,6 @@ import os
 import re
 from utils.prompt import extract_meeting_summary
 from utils.confluence import create_confluence_page
-from utils.ssm import get_secret_from_ssm
 
 def handler(event, context):
     s3_bucket = event['Records'][0]['s3']['bucket']['name']
@@ -21,18 +20,20 @@ def handler(event, context):
         match = re.search(r'```json\s*(\{.*\})\s*```', completion_text, re.DOTALL)
         if match:
             json_string = match.group(1)
-            parsed_json = json.loads(json_string)
-            confluence_secret = get_secret_from_ssm(os.environ['CONFLUENCE_API_SECRET'])
-            response = create_confluence_page(parsed_json, os.environ['CONFLUENCE_API_URL'], confluence_secret)
-            if response.status_code == 200:
-                return {
-                    'statusCode': 200,
-                    'body': 'Confluence page created successfully'
-                }
-            else:
-                return {
-                    'statusCode': response.status_code,
-                    'body': f"Failed to create Confluence page: {response.text}"
-                }                
+            response_body = json.loads(json_string)
         else:
             print(f"No JSON match found in the completion text. Raw completion text: {completion_text}")
+            return
+
+    if isinstance(response_body, dict):
+        confluence_secret = json.loads(os.environ['CONFLUENCE_API_SECRET'])
+        response = create_confluence_page(response_body, os.environ['CONFLUENCE_API_URL'], confluence_secret)
+        if response.status_code == 200:
+            return {
+                'statusCode': 200,
+                'body': 'Confluence page created successfully'
+            }
+        return {
+            'statusCode': response.status_code,
+            'body': f"Failed to create Confluence page: {response.text}"
+        }

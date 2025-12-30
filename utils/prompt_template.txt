@@ -1,4 +1,4 @@
-The input data is a meeting transcript, which may contain several presentations provided 
+The input data is a meeting transcript chunk, which may contain several presentations provided 
 by different individuals. For this meeting, we need to extract the following general fields:  
 - Participants: A list of the names of the meeting participants.  
 - Goal: The goals of the meeting based on the transcript.  

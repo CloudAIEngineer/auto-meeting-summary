@@ -22,3 +22,6 @@ build/
 # My folders
 backup/
 meetings/
+
+# macOS Finder metadata
+.DS_Store
